@@ -1,0 +1,7 @@
+name: Alpg
+main: Package.Main
+version: 1.0
+commands:
+  createmaze:
+    description: Create a maze
+    usage: /createmaze

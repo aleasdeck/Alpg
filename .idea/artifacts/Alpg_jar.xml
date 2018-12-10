@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Alpg:jar">
+    <output-path>$PROJECT_DIR$/../Aleas/Downloads/MinecraftSERVER1-12-2/plugins</output-path>
+    <root id="archive" name="Alpg.jar">
+      <element id="module-output" name="Alpg" />
+    </root>
+  </artifact>
+</component>

@@ -1,7 +1,7 @@
 name: Alpg
-main: Package.Main
+main: plugin.Main
 version: 1.0
 commands:
   createmaze:
-    description: Create a maze
+    description: abc
     usage: /createmaze

@@ -1,4 +1,4 @@
-package Package;
+package plugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -9,7 +9,7 @@ public class Main extends JavaPlugin {
         getLogger().info("Plugin enabled");
 
         getCommand("createmaze").setExecutor(new Commands(this));
-        Bukkit.getPluginManager().registerEvents(new Handler(),this);
+
     }
 
     public void onDisable() {

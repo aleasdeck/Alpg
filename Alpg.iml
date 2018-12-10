@@ -18,5 +18,16 @@
         </SOURCES>
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://E:/Aleas/Downloads/MinecraftSERVER1-12-2/craftbukkit-1.12.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://E:/Aleas/Downloads/MinecraftSERVER1-12-2/craftbukkit-1.12.2.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
   </component>
 </module>

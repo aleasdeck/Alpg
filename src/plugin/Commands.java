@@ -66,7 +66,7 @@ public class Commands implements CommandExecutor {
             {
                 if(row % 2 == 0) {
                     if (column % 2 == 0) {
-                        maze[row][column] = 1;
+                        maze[row][column] = 0;
                         cellsCount++;
                     }
                     else maze[row][column] = 0;
@@ -83,48 +83,70 @@ public class Commands implements CommandExecutor {
     private int[][] breakTheWall(int[/*row*/][/*column*/] emptyMaze, int cellsCount, int size) {
 
         Random random = new Random();
-        int stopCounter = 1, position = 0;
+        int nowPos = 0, fullCellsCount = 1;
 
-        // Наполняем массив с пройденными клетками
-        mazeCells[][] isUsed = new mazeCells[size][size];
-        isUsed[0][0] = new mazeCells(position, true);
+        mazePosition[] position = null;
+        position[0] = new mazePosition(0,0);
 
-        // Цикл выламывания(c yjub) стен
-        int x = 0, y = 0;
-        while(stopCounter < cellsCount){
-            switch(random.nextInt(4 )) {
-                case 1:                                         // row(x) - 2
-                    if(x - 2 >= 0) {
-                        if(isUsed[x-2][y].isUsed == false) {
-                            position++;
-                            emptyMaze[x-1][y] = 1;
-                            x -= 2;
-                            isUsed[x][y] = new mazeCells(position, true);
-                        }
-
-
+        while(nowPos < cellsCount){
+            if(hasFreeCell(emptyMaze, position[nowPos])){
+                switch(random.nextInt(4)){
+                    case 1: { // x-
+                        emptyMaze[position[nowPos].x - 1][position[nowPos].y] = 1;
+                        emptyMaze[position[nowPos].x - 2][position[nowPos].y] = 1;
+                        nowPos++;
+                        fullCellsCount++;
+                        position[nowPos] = new mazePosition(position[nowPos - 1].x - 2, position[nowPos - 1].y);
                     }
-                case 2: // row(x) + 2
-
-                case 3: // column(y) - 2
-
-                case 4: // column(y) + 2
-
+                    case 2: { // x+
+                        emptyMaze[position[nowPos].x + 1][position[nowPos].y] = 1;
+                        emptyMaze[position[nowPos].x + 2][position[nowPos].y] = 1;
+                        nowPos++;
+                        fullCellsCount++;
+                        position[nowPos] = new mazePosition(position[nowPos - 1].x + 2, position[nowPos - 1].y);
+                    }
+                    case 3: { // y-
+                        emptyMaze[position[nowPos].x][position[nowPos].y - 1] = 1;
+                        emptyMaze[position[nowPos].x][position[nowPos].y - 2] = 1;
+                        nowPos++;
+                        fullCellsCount++;
+                        position[nowPos] = new mazePosition(position[nowPos - 1].x, position[nowPos - 1].y - 2);
+                    }
+                    case 4: { // y+
+                        emptyMaze[position[nowPos].x][position[nowPos].y + 1] = 1;
+                        emptyMaze[position[nowPos].x][position[nowPos].y + 2] = 1;
+                        nowPos++;
+                        fullCellsCount++;
+                        position[nowPos] = new mazePosition(position[nowPos - 1].x, position[nowPos - 1].y + 2);
+                    }
+                }
             }
-
+            else{
+                nowPos--;
+            }
         }
 
         return emptyMaze;
     }
 
-    private class mazeCells{
+    public boolean hasFreeCell(int[][] maze, mazePosition position) {
 
-        public int number;
-        public boolean isUsed;
+        if(position.x - 2 >= 0) if(maze[position.x - 2][position.y] == 0) return true;
+        if(position.x + 2 <= maze.length) if(maze[position.x + 2][position.y] == 0) return true;
+        if(position.y - 2 >= 0) if(maze[position.x][position.y - 2] == 0) return true;
+        if(position.y + 2 <= maze.length) if(maze[position.x][position.y + 2] == 0) return true;
 
-        public mazeCells (int number, boolean isUsed) {
-            this.number = number;
-            this.isUsed = isUsed;
+        return false;
+    }
+
+    private class mazePosition{
+
+        public int x;
+        public int y;
+
+        public mazePosition (int x, int y) {
+            this.x = x;
+            this.y = y;
         }
     }
 }

@@ -4,4 +4,4 @@ version: 1.0
 commands:
   createmaze:
     description: abc
-    usage: /createmaze
+    usage: /createmaze <size>

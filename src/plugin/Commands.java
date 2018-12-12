@@ -22,9 +22,10 @@ public class Commands implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+
         if (!(sender instanceof Player)) return true;
 
-        int[][] maze = generateMaze(20);
+        int[][] maze = generateMaze(Integer.parseInt(args[0]), false);
 
         Location start = ((Player) sender).getLocation();
         start.setX(((Player) sender).getLocation().getX());
@@ -47,72 +48,65 @@ public class Commands implements CommandExecutor {
         return true;
     }
 
-    private int[][] generateMaze(int size) {
-
-        int[][] maze = new int[size][size];
-        int cellsCount = 0;
-
-        // Определяем количество ячеек
-        if(size % 2 != 0) cellsCount = (size + 1) / 4;
-        else cellsCount = size / 4;
-
-        // Строим лабиринт и рушим стены
-        breakTheWall(maze, cellsCount, size);
-
-        return maze;
-    }
-
-    private int[][] breakTheWall(int[/*row*/][/*column*/] emptyMaze, int cellsCount, int size) {
+    private static int[][] generateMaze(int size, boolean multiPath){
 
         Random random = new Random();
-        int nowPos = 0, fullCellsCount = 1;
-        emptyMaze[0][0] = 1;
+        int maze[][] = new int[size][size];                                                                             // Пустой квадрат
+        maze[0][0] = 1;                                                                                                 // Задаем стартовую позицию как посещенную
+        int keyCellsCount = (size % 2 != 0) ? ((int)Math.pow((size + 1), 2) / 4) : ((int)Math.pow((size), 2) / 4);      // Колличество ключевых ячеек, где будем останавливаться
+        int filledKeyCells = 1;                                                                                         // Заполненные ключевые ячейки
+        int nowPos = 0;                                                                                                 // Текущая позиция
+        Coordinates[] position = new Coordinates[keyCellsCount];                                                        // Массив с пройденными координатами
+        position[nowPos] = new Coordinates();
+        position[nowPos].setX(0);
+        position[nowPos].setY(0);
 
-        mazePosition[] position = new mazePosition[cellsCount];
-        position[0] = new mazePosition();
-
-        while(fullCellsCount < cellsCount){
-            System.out.println(">------<" + fullCellsCount);
-            if(hasFreeCell(emptyMaze, position[nowPos])){
-                switch(random.nextInt(5)){
-                    case 1: { // x-
-                        System.out.println(">>> 1 Вниз");
-                        if(position[nowPos].x - 1 < 0) break;
-                        emptyMaze[position[nowPos].x - 1][position[nowPos].y] = 1;
-                        emptyMaze[position[nowPos].x - 2][position[nowPos].y] = 1;
+        while(filledKeyCells < keyCellsCount){
+            if(checkCellsAround(maze, position[nowPos])){
+                int rndValue = random.nextInt(4) + 1;
+                switch(rndValue){
+                    case 1: { // x- вверх
+                        if(!checkCellGoTo(maze, position[nowPos], rndValue, 2)) break;
+                        maze[position[nowPos].getX() - 1][position[nowPos].getY()] = 1;
+                        maze[position[nowPos].getX() - 2][position[nowPos].getY()] = 1;
                         nowPos++;
-                        fullCellsCount++;
-                        position[nowPos] = new mazePosition(position[nowPos - 1].x - 2, position[nowPos - 1].y);
+                        position[nowPos] = new Coordinates();
+                        position[nowPos].setX(position[nowPos - 1].getX() - 2);
+                        position[nowPos].setY(position[nowPos - 1].getY());
+                        filledKeyCells++;
                         break;
                     }
-                    case 2: { // x+
-                        System.out.println(">>> 2 Вверх");
-                        if(position[nowPos].x + 1 > size) break;
-                        emptyMaze[position[nowPos].x + 1][position[nowPos].y] = 1;
-                        emptyMaze[position[nowPos].x + 2][position[nowPos].y] = 1;
+                    case 2: { // x+ вниз
+                        if(!checkCellGoTo(maze, position[nowPos], rndValue, 2)) break;
+                        maze[position[nowPos].getX() + 1][position[nowPos].getY()] = 1;
+                        maze[position[nowPos].getX() + 2][position[nowPos].getY()] = 1;
                         nowPos++;
-                        fullCellsCount++;
-                        position[nowPos] = new mazePosition(position[nowPos - 1].x + 2, position[nowPos - 1].y);
+                        position[nowPos] = new Coordinates();
+                        position[nowPos].setX(position[nowPos - 1].getX() + 2);
+                        position[nowPos].setY(position[nowPos - 1].getY());
+                        filledKeyCells++;
                         break;
                     }
-                    case 3: { // y-
-                        System.out.println(">>> 3 Налево");
-                        if(position[nowPos].y - 1 < 0) break;
-                        emptyMaze[position[nowPos].x][position[nowPos].y - 1] = 1;
-                        emptyMaze[position[nowPos].x][position[nowPos].y - 2] = 1;
+                    case 3: { // y- влево
+                        if(!checkCellGoTo(maze, position[nowPos], rndValue, 2)) break;
+                        maze[position[nowPos].getX()][position[nowPos].getY() - 1] = 1;
+                        maze[position[nowPos].getX()][position[nowPos].getY() - 2] = 1;
                         nowPos++;
-                        fullCellsCount++;
-                        position[nowPos] = new mazePosition(position[nowPos - 1].x, position[nowPos - 1].y - 2);
+                        position[nowPos] = new Coordinates();
+                        position[nowPos].setX(position[nowPos - 1].getX());
+                        position[nowPos].setY(position[nowPos - 1].getY() - 2);
+                        filledKeyCells++;
                         break;
                     }
-                    case 4: { // y+
-                        System.out.println(">>> 4 Направо");
-                        if(position[nowPos].y + 1 > size) break;
-                        emptyMaze[position[nowPos].x][position[nowPos].y + 1] = 1;
-                        emptyMaze[position[nowPos].x][position[nowPos].y + 2] = 1;
+                    case 4: { // y+ вправо
+                        if(!checkCellGoTo(maze, position[nowPos], rndValue, 2)) break;
+                        maze[position[nowPos].getX()][position[nowPos].getY() + 1] = 1;
+                        maze[position[nowPos].getX()][position[nowPos].getY() + 2] = 1;
                         nowPos++;
-                        fullCellsCount++;
-                        position[nowPos] = new mazePosition(position[nowPos - 1].x, position[nowPos - 1].y + 2);
+                        position[nowPos] = new Coordinates();
+                        position[nowPos].setX(position[nowPos - 1].getX());
+                        position[nowPos].setY(position[nowPos - 1].getY() + 2);
+                        filledKeyCells++;
                         break;
                     }
                 }
@@ -122,31 +116,71 @@ public class Commands implements CommandExecutor {
             }
         }
 
-        return emptyMaze;
+        if(multiPath){                                                      // Ломаем стены для вариативности прохождения
+            int breakingWallsCount = (int)Math.pow((size / 5), 2);          // Колличество ломаемых стен
+            int posIndexForBreak, wayForBreak;
+
+            for(int i = 0; i <  breakingWallsCount; i++){
+                boolean exit = false;
+                do {
+                    posIndexForBreak = random.nextInt(position.length);
+                    wayForBreak = random.nextInt(4) + 1;
+                    System.out.println("Pos:" + posIndexForBreak + " X:" + position[posIndexForBreak].getX() + " Y:" + position[posIndexForBreak].getY() + " Way:" + wayForBreak + " MazeVal:" +
+                            maze[position[posIndexForBreak].getX()][position[posIndexForBreak].getY()]);
+                    if(checkCellGoTo(maze, position[posIndexForBreak], wayForBreak, 1)) {
+                        if(wayForBreak == 1) { maze[position[posIndexForBreak].getX() - 1][position[posIndexForBreak].getY()] = 1; exit = true; } // вверх
+                        if(wayForBreak == 2) { maze[position[posIndexForBreak].getX() + 1][position[posIndexForBreak].getY()] = 1; exit = true; } // вниз
+                        if(wayForBreak == 3) { maze[position[posIndexForBreak].getX()][position[posIndexForBreak].getY() - 1] = 1; exit = true; } // влево
+                        if(wayForBreak == 4) { maze[position[posIndexForBreak].getX()][position[posIndexForBreak].getY() + 1] = 1; exit = true; } // вправо
+                    }
+                }
+                while(!exit);
+            }
+        }
+
+        return maze;
     }
 
-    public boolean hasFreeCell(int[][] maze, mazePosition position) {
+    private static boolean checkCellsAround(int[][] maze, Coordinates position) {
 
-        if(position.x - 2 >= 0) if(maze[position.x - 2][position.y] == 0) return true;
-        if(position.x + 2 <= maze.length) if(maze[position.x + 2][position.y] == 0) return true;
-        if(position.y - 2 >= 0) if(maze[position.x][position.y - 2] == 0) return true;
-        if(position.y + 2 <= maze.length) if(maze[position.x][position.y + 2] == 0) return true;
+        if(position.getX() - 2 >= 0) if(maze[position.getX() - 2][position.getY()] == 0) return true;            // x-
+        if(position.getX() + 2 <= maze.length) if(maze[position.getX() + 2][position.getY()] == 0) return true;  // x+
+        if(position.getY() - 2 >= 0) if(maze[position.getX()][position.getY() - 2] == 0) return true;            // y-
+        if(position.getY() + 2 <= maze.length) if(maze[position.getX()][position.getY() + 2] == 0) return true;  // y+
 
         return false;
     }
 
-    private class mazePosition{
+    private static boolean checkCellGoTo(int[][] maze, Coordinates position, int way, int keyOrWall) {  // way - направление, keyOrWall - 2-ключевая клетка, 1-стена
 
-        public mazePosition () {
+        if(way == 1) if(position.getX() - 2 >= 0) if(maze[position.getX() - keyOrWall][position.getY()] == 0) return true;            // x-
+        if(way == 2) if(position.getX() + 2 <= maze.length) if(maze[position.getX() + keyOrWall][position.getY()] == 0) return true;  // x+
+        if(way == 3) if(position.getY() - 2 >= 0) if(maze[position.getX()][position.getY() - keyOrWall] == 0) return true;            // y-
+        if(way == 4) if(position.getY() + 2 <= maze.length) if(maze[position.getX()][position.getY() + keyOrWall] == 0) return true;  // y+
 
+        return false;
+    }
+
+    private static class Coordinates {
+
+        private int x;
+        private int y;
+
+        public int getX() {
+            return x;
         }
 
-        public int x;
-        public int y;
+        public int getY() {
+            return y;
+        }
 
-        public mazePosition (int x, int y) {
+        public void setX(int x) {
             this.x = x;
+        }
+
+        public void setY(int y) {
             this.y = y;
         }
     }
 }
+

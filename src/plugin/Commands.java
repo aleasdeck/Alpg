@@ -25,7 +25,7 @@ public class Commands implements CommandExecutor {
 
         if (!(sender instanceof Player)) return true;
 
-        int[][] maze = generateMaze(Integer.parseInt(args[0]), false);
+        int[][] maze = generateMaze(Integer.parseInt(args[0]), true);
 
         Location start = ((Player) sender).getLocation();
         start.setX(((Player) sender).getLocation().getX());
@@ -38,8 +38,22 @@ public class Commands implements CommandExecutor {
                 start.setX(start.getX() + row);
                 start.setZ(start.getZ() + column);
 
-                if (maze[row][column] == 0) start.getBlock().setType(Material.COAL_BLOCK);
-                else start.getBlock().setType(Material.WOOL);
+                if (maze[row][column] == 0) {
+                    start.getBlock().setType(Material.COAL_BLOCK);
+                    start.setY(start.getY() + 1);
+                    start.getBlock().setType(Material.COAL_BLOCK);
+                    start.setY(start.getY() + 1);
+                    start.getBlock().setType(Material.COAL_BLOCK);
+                    start.setY(start.getY() - 2);
+                }
+                else {
+                    start.getBlock().setType(Material.WOOL);
+                    start.setY(start.getY() + 1);
+                    start.getBlock().setType(Material.AIR);
+                    start.setY(start.getY() + 1);
+                    start.getBlock().setType(Material.AIR);
+                    start.setY(start.getY() - 2);
+                }
 
                 start.setX(((Player) sender).getLocation().getX());
                 start.setZ(((Player) sender).getLocation().getZ());
@@ -117,25 +131,62 @@ public class Commands implements CommandExecutor {
         }
 
         if(multiPath){                                                      // Ломаем стены для вариативности прохождения
-            int breakingWallsCount = (int)Math.pow((size / 5), 2);          // Колличество ломаемых стен
-            int posIndexForBreak, wayForBreak;
 
+            int breakingWallsCount = (size / 5) * 2;          // Колличество ломаемых стен
+
+            for(int i = 0; i <  breakingWallsCount; i++) {
+                boolean exit = false;
+                do {
+                    int randomX = random.nextInt(size - 1);
+                    int randomY = random.nextInt(size - 1);
+                    int way = random.nextInt(4) - 1;
+                    if((randomX % 2 == 0 && randomY % 2 != 0) || (randomX % 2 != 0 && randomY % 2 == 0)) {
+                        if(checkCellGoTo(maze, new Coordinates(randomX, randomY), way, 1)) {
+                            System.out.println("X:" + randomX + " Y:" + randomY);
+                            maze[randomX][randomY] = 1;
+                            exit = true;
+                        }
+                    }
+                } while(!exit);
+            }
+
+            /*int breakingWallsCount = (int)Math.pow((size / 5), 2);          // Колличество ломаемых стен
+            int posIndexForBreak, wayForBreak;
             for(int i = 0; i <  breakingWallsCount; i++){
                 boolean exit = false;
                 do {
                     posIndexForBreak = random.nextInt(position.length);
                     wayForBreak = random.nextInt(4) + 1;
-                    System.out.println("Pos:" + posIndexForBreak + " X:" + position[posIndexForBreak].getX() + " Y:" + position[posIndexForBreak].getY() + " Way:" + wayForBreak + " MazeVal:" +
-                            maze[position[posIndexForBreak].getX()][position[posIndexForBreak].getY()]);
+                    System.out.print("Pos:" + posIndexForBreak + " ");
+                    for(Coordinates coords : position) System.out.print("|x:" + coords.getX() + "y:" + coords.getY());
+                    System.out.print(" X:" + position[posIndexForBreak].getX());
+                    System.out.print(" Y:" + position[posIndexForBreak].getY());
+                    System.out.println(" Way:" + wayForBreak);
                     if(checkCellGoTo(maze, position[posIndexForBreak], wayForBreak, 1)) {
-                        if(wayForBreak == 1) { maze[position[posIndexForBreak].getX() - 1][position[posIndexForBreak].getY()] = 1; exit = true; } // вверх
-                        if(wayForBreak == 2) { maze[position[posIndexForBreak].getX() + 1][position[posIndexForBreak].getY()] = 1; exit = true; } // вниз
-                        if(wayForBreak == 3) { maze[position[posIndexForBreak].getX()][position[posIndexForBreak].getY() - 1] = 1; exit = true; } // влево
-                        if(wayForBreak == 4) { maze[position[posIndexForBreak].getX()][position[posIndexForBreak].getY() + 1] = 1; exit = true; } // вправо
+                        if(wayForBreak == 1) {
+                            System.out.println("1");
+                            maze[position[posIndexForBreak].getX() - 1][position[posIndexForBreak].getY()] = 1;
+                            exit = true;
+                            } // вверх
+                        if(wayForBreak == 2) {
+                            System.out.println("2");
+                            maze[position[posIndexForBreak].getX() + 1][position[posIndexForBreak].getY()] = 1;
+                            exit = true;
+                            } // вниз
+                        if(wayForBreak == 3) {
+                            System.out.println("3");
+                            maze[position[posIndexForBreak].getX()][position[posIndexForBreak].getY() - 1] = 1;
+                            exit = true;
+                            } // влево
+                        if(wayForBreak == 4) {
+                            System.out.println("4");
+                            maze[position[posIndexForBreak].getX()][position[posIndexForBreak].getY() + 1] = 1;
+                            exit = true;
+                            } // вправо
                     }
                 }
                 while(!exit);
-            }
+            }*/
         }
 
         return maze;
@@ -170,6 +221,15 @@ public class Commands implements CommandExecutor {
             return x;
         }
 
+        public Coordinates() {
+
+        }
+
+        public Coordinates(int x, int y){
+            this.x = x;
+            this.y = y;
+        }
+
         public int getY() {
             return y;
         }
@@ -183,4 +243,3 @@ public class Commands implements CommandExecutor {
         }
     }
 }
-
